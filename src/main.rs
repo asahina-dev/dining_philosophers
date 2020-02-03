@@ -1,3 +1,6 @@
+use std::thread;
+use std::time::Duration;
+
 // 構造体
 struct Philosopher {
     name: String,
@@ -12,6 +15,8 @@ impl Philosopher {
         }
     }
     fn eat(&self) {
+        println!("{} is eating.", self.name);
+        thread::sleep(Duration::from_millis(1000));
         println!("{} is done eating.", self.name);
     }
 }
@@ -25,7 +30,18 @@ fn main() {
         Philosopher::new("Emma Goldman"),
         Philosopher::new("Michel Foucault"),
     ];
-    for p in &philosophers {
-        p.eat();
+
+    // _ は型プレースホルダ
+    let handles: Vec<_> = philosophers
+        .into_iter()
+        .map(|p| {
+            thread::spawn(move || {
+                p.eat();
+            })
+        })
+        .collect(); // コレクション型を生成
+
+    for h in handles {
+        h.join().unwrap();
     }
 }
